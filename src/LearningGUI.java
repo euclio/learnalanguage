@@ -56,12 +56,15 @@ public class LearningGUI extends JFrame {
         consolePane.setBorder(BorderFactory.createTitledBorder("Console"));
 
         // Add the components to the main window
+        this.setJMenuBar(new LearningMenuBar());
         this.add(optionsPanel, BorderLayout.NORTH);
         this.add(editorPane, BorderLayout.CENTER);
         this.add(consolePane, BorderLayout.EAST);
         
         // Final Options for GUI
+        
         this.setSize(WINDOW_DIMENSION);
+        
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
