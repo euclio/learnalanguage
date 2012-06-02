@@ -2,28 +2,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import javax.swing.JEditorPane;
-import javax.swing.JTextArea;
 import javax.tools.*;
 
 public class Compiler {
-    // private OutputStream errorStream = null;
     private JEditorPane source;
-    private JTextArea output;
+    private LearningConsole output;
     private boolean isCompiled = false;
     private JavaCompiler theCompiler = ToolProvider.getSystemJavaCompiler();
-    private OutputStream errorStream = new OutputStream() {
-        public void write(int b) {
-            output.append(String.valueOf((char) b));
-        }
-    };
-
-    public Compiler() {
-
+    
+    public Compiler(JEditorPane source, LearningConsole output) {
+        this.source = source;
+        this.output = output;
     }
-
+    
     public void setCompiled(boolean state) {
         isCompiled = true;
     }
@@ -40,7 +33,7 @@ public class Compiler {
         }
 
         output.append("\nCompiling " + fileName + "...\n");
-        int status = theCompiler.run(null, null, errorStream,
+        int status = theCompiler.run(null, null, output.getStream(),
                 sourceFile.getName());
         if (status == 0) {
             output.append("Compilation successful. No errors detected.");
@@ -48,10 +41,6 @@ public class Compiler {
         } else {
             output.append("Compilation failed.");
         }
-    }
-
-    public void setOutput(JTextArea output) {
-        this.output = output;
     }
 
     public void setSource(JEditorPane source) {
