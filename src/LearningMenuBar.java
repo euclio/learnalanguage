@@ -1,12 +1,12 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+@SuppressWarnings("serial")
 public class LearningMenuBar extends JMenuBar {
     public enum MenuChoices {
         // File
