@@ -31,6 +31,11 @@ public class LearningGUI extends JFrame {
 
     private String className = "Test";
     private String[] args = new String[0];
+    private String initialProgram = "public class Test {\n" +
+    		"\tpublic static void main(String [] args) {\n" +
+    		"\t\tSystem.out.println(\"Hello World!\");\n" +
+    		"\t}\n" +
+    		"}";
 
     public LearningGUI(String title) {
         super(title);
@@ -55,9 +60,11 @@ public class LearningGUI extends JFrame {
         optionsPanel.add(runButton);
 
         // Create the panel that holds the code editor
+        jsyntaxpane.DefaultSyntaxKit.initKit();
         JEditorPane editor = new JEditorPane();
-        editor.setContentType("text/java");
         JScrollPane editorPane = new JScrollPane(editor);
+        editor.setContentType("text/java");
+        editor.setText(initialProgram);
         editorPane.setBorder(BorderFactory.createTitledBorder("Editor"));
 
         // Create the panel that holds the console
@@ -70,6 +77,7 @@ public class LearningGUI extends JFrame {
         consolePane.setBorder(BorderFactory.createTitledBorder("Console"));
         compiler = new Compiler(editor, console);
         runner = new Runner(console);
+        
         // Add the components to the main window
         this.setJMenuBar(new LearningMenuBar());
         this.add(optionsPanel, BorderLayout.NORTH);
@@ -77,7 +85,6 @@ public class LearningGUI extends JFrame {
         this.add(consolePane, BorderLayout.EAST);
 
         // Final Options for GUI
-
         this.setSize(WINDOW_DIMENSION);
 
         this.addWindowListener(new WindowAdapter() {
