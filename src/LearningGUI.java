@@ -49,7 +49,7 @@ public class LearningGUI extends JFrame {
         JButton runButton = new JButton("Run!");
         runButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                runner.run(className, args);
+                runner.execute(className, args);
             }
         });
         optionsPanel.add(runButton);
