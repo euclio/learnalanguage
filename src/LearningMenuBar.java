@@ -58,7 +58,9 @@ public class LearningMenuBar extends JMenuBar {
 
     public void about() {
         JOptionPane.showMessageDialog(this.getParent(),
-                "This program is coded by Andy Russell.");
+                "Coded by Andy Russell 2012.\n" +
+                "This program uses the JSyntaxPane library licensed under Apache 2.0.\n" +
+                "The license may be found at http://www.apache.org/licenses/LICENSE-2.0.html");
     }
 
     public void exit() {
