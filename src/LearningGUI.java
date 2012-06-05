@@ -31,11 +31,9 @@ public class LearningGUI extends JFrame {
 
     private String className = "Test";
     private String[] args = new String[0];
-    private String initialProgram = "public class Test {\n" +
-    		"\tpublic static void main(String [] args) {\n" +
-    		"\t\tSystem.out.println(\"Hello World!\");\n" +
-    		"\t}\n" +
-    		"}";
+    private String initialProgram = "public class Test {\n"
+            + "\tpublic static void main(String [] args) {\n"
+            + "\t\tSystem.out.println(\"Hello World!\");\n" + "\t}\n" + "}";
 
     public LearningGUI(String title) {
         super(title);
@@ -43,7 +41,10 @@ public class LearningGUI extends JFrame {
         // Initialize the top panel
         JPanel optionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JButton compileButton = new JButton("Compile");
+        final JButton compileButton = new JButton("Compile");
+        final JButton runButton = new JButton("Run!");
+        final JButton stopButton = new JButton("Stop");
+
         compileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 compiler.compile(className + ".java");
@@ -51,13 +52,34 @@ public class LearningGUI extends JFrame {
         });
         optionsPanel.add(compileButton);
 
-        JButton runButton = new JButton("Run!");
         runButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 runner.execute(className, args);
+                //stopButton.setEnabled(true);
             }
         });
         optionsPanel.add(runButton);
+
+        stopButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runner.stop();
+                //((JButton) e.getSource()).setEnabled(false);
+            }
+        });
+
+        (new Thread() {
+            public void run() {
+                while (true) {
+                    if (runner != null && runner.isExecuting()) {
+                        stopButton.setEnabled(true);
+                    } else {
+                        stopButton.setEnabled(false);
+                    }
+                }
+            }
+        }).start();
+
+        optionsPanel.add(stopButton);
 
         // Create the panel that holds the code editor
         jsyntaxpane.DefaultSyntaxKit.initKit();
@@ -72,12 +94,11 @@ public class LearningGUI extends JFrame {
                 TERMINAL_ROWS, TERMINAL_COLS);
         console.setEditable(false);
         console.setFont(TERMINAL_FONT);
-        console.setCaretPosition(console.getDocument().getLength());
         JScrollPane consolePane = new JScrollPane(console);
         consolePane.setBorder(BorderFactory.createTitledBorder("Console"));
         compiler = new Compiler(editor, console);
         runner = new Runner(console);
-        
+
         // Add the components to the main window
         this.setJMenuBar(new LearningMenuBar());
         this.add(optionsPanel, BorderLayout.NORTH);
