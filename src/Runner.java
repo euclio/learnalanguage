@@ -7,28 +7,35 @@ import java.io.PrintStream;
 public class Runner {
     private LearningConsole output;
     private Process p;
+    private volatile boolean isExecuting = false;
+
     public Runner(LearningConsole output) {
         this.output = output;
     }
-    
+
     class StreamPiper extends Thread {
-             InputStream is;
+        InputStream is;
+
         StreamPiper(InputStream is) {
             this.is = is;
         }
-        
+
         public void run() {
             try {
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader br = new BufferedReader(isr);
                 String line;
-                while((line = br.readLine()) != null)
+                while ((line = br.readLine()) != null)
                     System.out.println(line);
-            
+
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
         }
+    }
+
+    public boolean isExecuting() {
+        return isExecuting;
     }
 
     public void execute(String className, String[] parameters) {
@@ -39,14 +46,33 @@ public class Runner {
         System.out.println();
         try {
             p = pb.start();
+            isExecuting = true;
+            (new Thread() {
+                public void run() {
+                    int statusCode = -1;
+                    try {
+                        statusCode = p.waitFor();
+                    } catch (InterruptedException e) {
+                        System.out
+                                .println("Error: Machine monitor interrupted.");
+                    } finally {
+                        isExecuting = false;
+                        String status = "\nMachine returned " + statusCode
+                                + (statusCode == 0 ? " (success)" : " (error)")
+                                + ".";
+                        System.out.println(status);
+                    }
+                }
+            }).start();
+            StreamPiper output = new StreamPiper(p.getInputStream());
+            output.start();
         } catch (IOException e) {
             System.out.println("Error in execution: " + e.getMessage());
         }
-        StreamPiper output = new StreamPiper(p.getInputStream());
-        output.start();
     }
-    
+
     public void stop() {
         p.destroy();
+        System.out.println("Terminated Machine");
     }
 }
