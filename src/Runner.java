@@ -5,12 +5,10 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 public class Runner {
-    private LearningConsole output;
     private Process p;
     private volatile boolean isExecuting = false;
 
-    public Runner(LearningConsole output) {
-        this.output = output;
+    public Runner() {
     }
 
     class StreamPiper extends Thread {
@@ -40,8 +38,6 @@ public class Runner {
 
     public void execute(String className, String[] parameters) {
         ProcessBuilder pb = new ProcessBuilder("java", className);
-        System.setOut(new PrintStream(output.getStream()));
-        System.setErr(new PrintStream(output.getStream()));
         System.out.println("\nRunning " + className + ".java...");
         System.out.println();
         try {
