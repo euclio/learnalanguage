@@ -73,6 +73,6 @@ public class Runner {
 
     public void stop() {
         p.destroy();
-        System.out.println("Terminated Machine");
+        System.out.println("Terminated machine.");
     }
 }
