@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -96,8 +98,11 @@ public class LearningGUI extends JFrame {
         console.setFont(TERMINAL_FONT);
         JScrollPane consolePane = new JScrollPane(console);
         consolePane.setBorder(BorderFactory.createTitledBorder("Console"));
-        compiler = new Compiler(editor, console);
-        runner = new Runner(console);
+        compiler = new Compiler(editor);
+        runner = new Runner();
+        
+        System.setOut(new PrintStream(console.getStream()));
+        System.setErr(new PrintStream(console.getStream()));
 
         // Add the components to the main window
         this.setJMenuBar(new LearningMenuBar());
@@ -107,6 +112,7 @@ public class LearningGUI extends JFrame {
 
         // Final Options for GUI
         this.setSize(WINDOW_DIMENSION);
+        this.setLocationRelativeTo(null);
 
         this.addWindowListener(new WindowAdapter() {
             @Override
