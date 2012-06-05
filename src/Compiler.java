@@ -8,15 +8,13 @@ import javax.tools.*;
 
 public class Compiler {
     private JEditorPane source;
-    private LearningConsole output;
     private boolean isCompiled = false;
     private JavaCompiler theCompiler = ToolProvider.getSystemJavaCompiler();
-    
-    public Compiler(JEditorPane source, LearningConsole output) {
+
+    public Compiler(JEditorPane source) {
         this.source = source;
-        this.output = output;
     }
-    
+
     public void setCompiled(boolean state) {
         isCompiled = true;
     }
@@ -32,14 +30,14 @@ public class Compiler {
             // Do nothing
         }
 
-        output.append("\nCompiling " + fileName + "...\n");
-        int status = theCompiler.run(null, null, output.getStream(),
+        System.out.println("\nCompiling " + fileName + "...\n");
+        int status = theCompiler.run(null, System.out, System.err,
                 sourceFile.getName());
         if (status == 0) {
-            output.append("Compilation successful. No errors detected.");
+            System.out.println("Compilation successful. No errors detected.");
             isCompiled = true;
         } else {
-            output.append("Compilation failed.");
+            System.out.println("Compilation failed.");
         }
     }
 
