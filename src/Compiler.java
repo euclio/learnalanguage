@@ -3,20 +3,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
 import javax.tools.*;
 
 public class Compiler {
-    private JEditorPane source;
-    private boolean isCompiled = false;
+    private JTextComponent source;
+    private Console status;
     private JavaCompiler theCompiler = ToolProvider.getSystemJavaCompiler();
 
-    public Compiler(JEditorPane source) {
+    public Compiler(JTextComponent source, Console status) {
         this.source = source;
-    }
-
-    public void setCompiled(boolean state) {
-        isCompiled = true;
+        this.status = status;
     }
 
     public void compile(String fileName) {
@@ -27,21 +24,21 @@ public class Compiler {
                     sourceFile));
             source.write(fileOut);
         } catch (IOException e) {
-            // Do nothing
+            status.appendLine("Error: Could not write to file.");
+            return;
         }
 
-        System.out.println("\nCompiling " + fileName + "...\n");
-        int status = theCompiler.run(null, System.out, System.err,
+        status.append("Compiling " + fileName + "...\n");
+        int statusCode = theCompiler.run(null, System.out, System.err,
                 sourceFile.getName());
-        if (status == 0) {
-            System.out.println("Compilation successful. No errors detected.");
-            isCompiled = true;
+        if (statusCode == 0) {
+            status.appendLine("Compilation successful. No errors detected.");
         } else {
-            System.out.println("Compilation failed.");
+            status.appendLine("Compilation failed.");
         }
     }
 
-    public void setSource(JEditorPane source) {
+    public void setSource(JTextComponent source) {
         this.source = source;
     }
 }
