@@ -1,3 +1,5 @@
+package com.acrussell.learnalanguage;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -11,15 +13,30 @@ public class Compiler {
     private Console status;
     private JavaCompiler theCompiler = ToolProvider.getSystemJavaCompiler();
 
+    /**
+     * Creates a new Compiler object
+     * 
+     * @param source
+     *            The TextComponent that holds the source code
+     * @param status
+     *            The text component that should display the compiler's status
+     */
     public Compiler(JTextComponent source, Console status) {
         this.source = source;
         this.status = status;
     }
 
+    /**
+     * Compiles a .java filename into a executable class
+     * 
+     * @param fileName
+     *            The name of the .java file to be compiled
+     */
     public void compile(String fileName) {
         File sourceFile = new File(fileName);
 
         try {
+            // Writes the contents of the editor to a file on the filesystem
             BufferedWriter fileOut = new BufferedWriter(new FileWriter(
                     sourceFile));
             source.write(fileOut);
@@ -29,8 +46,10 @@ public class Compiler {
         }
 
         status.append("Compiling " + fileName + "...\n");
-        int statusCode = theCompiler.run(null, System.out, System.err,
-                sourceFile.getName());
+
+        // Compiles the source into a .class file
+        int statusCode = theCompiler.run(null, status.getStream(),
+                status.getStream(), sourceFile.getName());
         if (statusCode == 0) {
             status.appendLine("Compilation successful. No errors detected.");
         } else {
@@ -38,6 +57,10 @@ public class Compiler {
         }
     }
 
+    /**
+     * @param source
+     *            The component that holds the code to be compiled
+     */
     public void setSource(JTextComponent source) {
         this.source = source;
     }

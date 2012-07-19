@@ -1,18 +1,35 @@
+package com.acrussell.learnalanguage;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.prefs.Preferences;
 
 public class Runner {
+    private Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     private Process p;
     private volatile boolean isExecuting = false;
-    private Console console, status;
+    private Console terminal, status;
 
-    public Runner(Console console, Console status) {
-        this.console = console;
+    /**
+     * Creates an object to handle running an executable Java process.
+     * 
+     * @param terminal
+     * @param status
+     */
+    public Runner(Console terminal, Console status) {
+        this.terminal = terminal;
         this.status = status;
     }
 
+    /**
+     * Class to handle piping an output stream of the created process into the
+     * input stream of the given status console and output console
+     * 
+     * @author Andy Russell
+     * 
+     */
     class StreamPiper extends Thread {
         InputStream is;
 
@@ -27,6 +44,7 @@ public class Runner {
 
                 while (true) {
                     // Sleep to avoid hanging the GUI with too many updates
+                    // A little hack, there's probably a better solution
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
@@ -40,7 +58,7 @@ public class Runner {
                         break;
                     }
 
-                    console.append(Character.toString((char) code));
+                    terminal.append(Character.toString((char) code));
                 }
 
             } catch (IOException ioe) {
@@ -64,6 +82,12 @@ public class Runner {
             status.appendLine("Error: Could not access the program.");
             return;
         }
+
+        // Clear the terminal at each execution if the user desires
+        if (prefs.getBoolean("terminal_should_clear", false)) {
+            terminal.setText("");
+        }
+
         isExecuting = true;
 
         // Thread that notifies GUI that the process has completed
@@ -92,6 +116,9 @@ public class Runner {
 
     }
 
+    /**
+     * Kills the current user program
+     */
     public void kill() {
         p.destroy();
         status.append("Terminated machine.");

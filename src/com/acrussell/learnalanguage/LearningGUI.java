@@ -1,3 +1,4 @@
+package com.acrussell.learnalanguage;
 import java.awt.BorderLayout;
 
 import java.awt.Dimension;
@@ -101,7 +102,9 @@ public class LearningGUI extends JFrame {
 
         terminal = new Console(TERMINAL_TEXT, TERMINAL_ROWS, TERMINAL_COLS);
 
-        terminalScroll = new JScrollPane(terminal);
+        terminalScroll = new JScrollPane(terminal,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         terminalScroll.setBorder(BorderFactory.createTitledBorder("Terminal"));
 
         consoleContainer.add(terminalScroll, BorderLayout.CENTER);
@@ -109,9 +112,12 @@ public class LearningGUI extends JFrame {
         status = new Console(STATUS_ROWS, STATUS_COLS);
         status.setMaxLines(STATUS_ROWS);
 
-        status.setBorder(BorderFactory.createTitledBorder("VM Status"));
+        JPanel statusPanel = new JPanel();
+        statusPanel.add(status);
+        statusPanel.setBorder(BorderFactory
+                .createTitledBorder("Virtual Machine Status"));
 
-        consoleContainer.add(status, BorderLayout.SOUTH);
+        consoleContainer.add(statusPanel, BorderLayout.SOUTH);
 
         compiler = new Compiler(editor, status);
         runner = new Runner(terminal, status);
