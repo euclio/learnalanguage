@@ -121,6 +121,6 @@ public class Runner {
      */
     public void kill() {
         p.destroy();
-        status.append("Terminated machine.");
+        status.appendLine("Terminated machine.");
     }
 }
