@@ -21,17 +21,11 @@ public class Console extends JTextArea {
      */
     private OutputStream writer = new OutputStream() {
         public void write(final int b) {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        append(String.valueOf((char) b));
-                    }
-                });
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    append(String.valueOf((char) b));
+                }
+            });
         }
     };
 
