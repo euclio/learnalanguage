@@ -4,13 +4,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ProcessBuilder.Redirect;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
-public class Runner {
+import javax.swing.JButton;
+import javax.swing.SwingWorker;
+
+public class Runner extends SwingWorker<String, String> {
     private Preferences prefs = Preferences.userNodeForPackage(this.getClass());
-    private Process p;
-    private volatile boolean isExecuting = false;
-    private Console terminal, status;
+    // private Process p;
+    private Console output, status;
+    private JButton runButton, stopButton;
+    private String mainClass, parameters[];
 
     /**
      * Creates an object to handle running an executable Java process.
@@ -18,9 +25,75 @@ public class Runner {
      * @param terminal
      * @param status
      */
-    public Runner(Console terminal, Console status) {
-        this.terminal = terminal;
+    public Runner(String mainClass, String[] parameters, JButton runButton,
+            JButton stopButton, Console output, Console status) {
+        this.output = output;
         this.status = status;
+        this.runButton = runButton;
+        this.stopButton = stopButton;
+        this.mainClass = mainClass;
+        this.parameters = parameters;
+    }
+
+    @Override
+    public String doInBackground() {
+        runButton.setEnabled(false);
+        stopButton.setEnabled(true);
+        // Create new process to execute user code
+        ProcessBuilder pb = new ProcessBuilder("java", mainClass); // TODO add
+                                                                   // parameters
+        status.appendLine(String.format("Running %s.java...", mainClass));
+
+        Process p;
+        try {
+            p = pb.start();
+        } catch (IOException ioe) {
+            return "Error: Could not access the program.";
+        }
+
+        // Clear the terminal at each execution if the user desires
+        if (prefs.getBoolean("terminal_should_clear", false)) {
+            output.setText("");
+        }
+
+        // Send process output to console
+        StreamPiper output = new StreamPiper(p.getInputStream());
+        output.start();
+
+        // Thread that notifies GUI that the process has completed
+        int statusCode = -1;
+        try {
+            statusCode = p.waitFor();
+            String statusMessage = String.format("Machine returned %d (%s).",
+                    statusCode, statusCode == 0 ? "success" : "error");
+            publish(statusMessage);
+        } catch (InterruptedException e) {
+            publish("Machine interrupted.");
+            p.destroy();
+        }
+        return "Execution complete.";
+    }
+
+    protected void process(List<String> messages) {
+        for (String message : messages) {
+            status.appendLine(message);
+        }
+    }
+
+    @Override
+    protected void done() {
+        if (!this.isCancelled()) {
+            try {
+                status.appendLine(get());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        runButton.setEnabled(true);
+        stopButton.setEnabled(false);
     }
 
     /**
@@ -58,69 +131,12 @@ public class Runner {
                         break;
                     }
 
-                    terminal.append(Character.toString((char) code));
+                    output.append(Character.toString((char) code));
                 }
 
             } catch (IOException ioe) {
                 status.appendLine("Error: could not read process output.");
             }
         }
-    }
-
-    public boolean isExecuting() {
-        return isExecuting;
-    }
-
-    public void execute(String className, String[] parameters) {
-        // Create new process to execute user code
-        ProcessBuilder pb = new ProcessBuilder("java", className);
-        status.appendLine("Running " + className + ".java...");
-
-        try {
-            p = pb.start();
-        } catch (IOException ioe) {
-            status.appendLine("Error: Could not access the program.");
-            return;
-        }
-
-        // Clear the terminal at each execution if the user desires
-        if (prefs.getBoolean("terminal_should_clear", false)) {
-            terminal.setText("");
-        }
-
-        isExecuting = true;
-
-        // Thread that notifies GUI that the process has completed
-        (new Thread() {
-            public void run() {
-                int statusCode = -1;
-                try {
-                    statusCode = p.waitFor();
-                } catch (InterruptedException e) {
-                    status.appendLine("Error: Machine monitor interrupted.");
-                    kill();
-                    statusCode = 1;
-                } finally {
-                    isExecuting = false;
-                    String statusMessage = "Machine returned " + statusCode
-                            + (statusCode == 0 ? " (success)" : " (error)")
-                            + ".";
-                    status.appendLine(statusMessage);
-                }
-            }
-        }).start();
-
-        // Send process output to console
-        StreamPiper output = new StreamPiper(p.getInputStream());
-        output.start();
-
-    }
-
-    /**
-     * Kills the current user program
-     */
-    public void kill() {
-        p.destroy();
-        status.appendLine("Terminated machine.");
     }
 }

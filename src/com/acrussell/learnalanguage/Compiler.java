@@ -1,67 +1,60 @@
 package com.acrussell.learnalanguage;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.List;
 
-import javax.swing.text.JTextComponent;
-import javax.tools.*;
+import javax.swing.SwingWorker;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import javax.swing.JButton;
 
-public class Compiler {
-    private JTextComponent source;
+public class Compiler extends SwingWorker<Void, String> {
     private Console status;
     private JavaCompiler theCompiler = ToolProvider.getSystemJavaCompiler();
+    private JButton compileButton;
+    private File[] source;
 
     /**
      * Creates a new Compiler object
      * 
      * @param source
-     *            The TextComponent that holds the source code
+     *            The source code to be compiled
      * @param status
      *            The text component that should display the compiler's status
      */
-    public Compiler(JTextComponent source, Console status) {
+    public Compiler(File[] source, JButton compileButton, Console status) {
         this.source = source;
         this.status = status;
+        this.compileButton = compileButton;
     }
 
-    /**
-     * Compiles a .java filename into a executable class
-     * 
-     * @param fileName
-     *            The name of the .java file to be compiled
-     */
-    public void compile(String fileName) {
-        File sourceFile = new File(fileName);
+    @Override
+    protected Void doInBackground() {
+        for (File f : source) {
+            publish(String.format("Compiling %s...", f.getName()));
 
-        try {
-            // Writes the contents of the editor to a file on the filesystem
-            BufferedWriter fileOut = new BufferedWriter(new FileWriter(
-                    sourceFile));
-            source.write(fileOut);
-        } catch (IOException e) {
-            status.appendLine("Error: Could not write to file.");
-            return;
+            // Compiles the source into a .class file
+            int statusCode = theCompiler.run(null, status.getStream(),
+                    status.getStream(), f.getName());
+            if (statusCode == 0) {
+                publish("Compilation successful.");
+            } else {
+                publish(String.format("Compilation failed with error code %d",
+                        statusCode));
+            }
         }
+        return null;
+    }
 
-        status.append("Compiling " + fileName + "...\n");
-
-        // Compiles the source into a .class file
-        int statusCode = theCompiler.run(null, status.getStream(),
-                status.getStream(), sourceFile.getName());
-        if (statusCode == 0) {
-            status.appendLine("Compilation successful. No errors detected.");
-        } else {
-            status.appendLine("Compilation failed.");
+    @Override
+    protected void process(List<String> statusMessages) {
+        for (String message : statusMessages) {
+            status.appendLine(message);
         }
     }
 
-    /**
-     * @param source
-     *            The component that holds the code to be compiled
-     */
-    public void setSource(JTextComponent source) {
-        this.source = source;
+    @Override
+    protected void done() {
+        compileButton.setEnabled(true);
     }
 }
