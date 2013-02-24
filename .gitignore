@@ -1,5 +1,5 @@
 # Ignore binaries
-.class
+*.class
 bin/*
 
 # Ignore eclipse things
