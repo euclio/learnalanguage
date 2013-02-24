@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 
@@ -16,39 +15,26 @@ public class Console extends JTextArea {
 
     private int maxLines = 80;
 
-    /*
-     * Writes an output stream byte by byte to the underlying Text component.
-     */
-//    private OutputStream writer = new OutputStream() {
-//        public void write(final int b) {
-//            append(String.valueOf((char) b));
-//        }
-//    };
-    
     private void updateTextArea(final String text) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                Console.this.append(text);
-            }
-        });
+        Console.this.append(text);
     }
-    
+
     private OutputStream writer = new OutputStream() {
         @Override
         public void write(int b) throws IOException {
-          updateTextArea(String.valueOf((char) b));
+            updateTextArea(String.valueOf((char) b));
         }
-     
+
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
-          updateTextArea(new String(b, off, len));
+            updateTextArea(new String(b, off, len));
         }
-     
+
         @Override
         public void write(byte[] b) throws IOException {
-          write(b, 0, b.length);
+            write(b, 0, b.length);
         }
-      };
+    };
 
     /**
      * Constructs a new Console with the given rows and columns, and initializes
