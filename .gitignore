@@ -1,0 +1,7 @@
+# Ignore binaries
+.class
+bin/*
+
+# Ignore eclipse things
+.settings
+.project
