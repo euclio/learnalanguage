@@ -10,12 +10,9 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-
-import java.io.FileNotFoundException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,14 +38,12 @@ public class LearningGUI extends JFrame {
 
     private final JPanel optionsPanel, consoleContainer;
     private final JButton compileButton, runButton, stopButton;
-    private final JEditorPane editor;
-    private final JScrollPane editorScroll, terminalScroll;
+    private final EditorPanel editorPanel;
+    private final JScrollPane terminalScroll;
     private final Console terminal, status;
 
     private Runner runner;
-
-    private String mainClass = "Test";
-    private String[] args = new String[0];
+    private List<String> args = new ArrayList<String>();
     private List<File> openFiles = Files.getOpenFiles();
 
     public LearningGUI(String title) {
@@ -64,6 +59,10 @@ public class LearningGUI extends JFrame {
         // Button to compile the user's program
         compileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                for (File f : openFiles) {
+                    editorPanel.confirmSave(f);
+                }
+                
                 new Compiler(openFiles, compileButton, status).execute();
             }
         });
@@ -72,14 +71,21 @@ public class LearningGUI extends JFrame {
         // Button to run the user's program
         runButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                runner = new Runner(mainClass, args, runButton, stopButton,
-                        terminal, status);
+                File selectedFile = editorPanel.getOpenFile();
+                if (selectedFile == null) {
+                    status.appendLine("Could not run. There is no selected file.");
+                    return;
+                }
+
+                runner = new Runner(editorPanel.getOpenFile(), args, runButton,
+                        stopButton, terminal, status);
                 runner.execute();
             }
         });
         optionsPanel.add(runButton);
 
         // Button to cancel execution of the user's program
+        stopButton.setEnabled(false);
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (runner != null) {
@@ -89,21 +95,11 @@ public class LearningGUI extends JFrame {
         });
         optionsPanel.add(stopButton);
 
-        // Create the panel that holds the code editor
-        JPanel teachingContainer = new JPanel(new BorderLayout());
-        jsyntaxpane.DefaultSyntaxKit.initKit();
-        editor = new JEditorPane();
-
-        editorScroll = new JScrollPane(editor);
-        editorScroll.setBorder(BorderFactory
+        editorPanel = new EditorPanel();
+        editorPanel.setBorder(BorderFactory
                 .createTitledBorder(EDITOR_BORDER_TEXT));
 
-        editor.setContentType("text/java");
-        if (Files.getLastOpenFile() != null) {
-            editor.setText(Files.readFile(Files.getLastOpenFile()));
-        }
-
-        teachingContainer.add(editorScroll, BorderLayout.CENTER);
+        // teachingContainer.add(editorScroll, BorderLayout.CENTER);
 
         // Create the panel that holds the consoles
         consoleContainer = new JPanel(new BorderLayout());
@@ -129,9 +125,9 @@ public class LearningGUI extends JFrame {
         consoleContainer.add(statusPanel, BorderLayout.SOUTH);
 
         // Add the components to the main window
-        this.setJMenuBar(new LearningMenuBar());
+        this.setJMenuBar(new LearningMenuBar(this));
         this.add(optionsPanel, BorderLayout.NORTH);
-        this.add(teachingContainer, BorderLayout.CENTER);
+        this.add(editorPanel, BorderLayout.CENTER);
         this.add(consoleContainer, BorderLayout.EAST);
 
         // Final Options for GUI
@@ -141,8 +137,13 @@ public class LearningGUI extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                editorPanel.cleanUpFiles();
                 System.exit(0);
             }
         });
+    }
+
+    public EditorPanel getEditorPanel() {
+        return editorPanel;
     }
 }
