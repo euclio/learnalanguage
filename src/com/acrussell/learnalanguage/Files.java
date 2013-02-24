@@ -2,12 +2,15 @@ package com.acrussell.learnalanguage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 public class Files {
-    private static Preferences prefs = Settings.getSettings();
+    private static Preferences prefs = Preferences
+            .userNodeForPackage(Files.class);
     private static List<File> openFiles;
 
     public static String readFile(File f) {
@@ -28,10 +31,13 @@ public class Files {
     public static List<File> getOpenFiles() {
         if (openFiles == null) {
             openFiles = new ArrayList<File>();
-            String openFileNames = prefs.get("open_files", null);
+            String openFileNames = prefs.get(Settings.OPEN_FILES, null);
             if (openFileNames != null) {
-                for (String fileName : openFileNames.split(",")) {
-                    openFiles.add(new File(fileName));
+                for (String fileName : openFileNames.split(";")) {
+                    File f = new File(fileName);
+                    if (f.exists()) {
+                        openFiles.add(f);
+                    }
                 }
             }
         }
@@ -39,11 +45,18 @@ public class Files {
     }
 
     public static File getLastOpenFile() {
-        String fileName = Settings.getSettings().get("last_file", null);
+        String fileName = prefs.get(Settings.LAST_OPEN_FILE, null);
         if (fileName == null) {
             return null;
         } else {
             return new File(fileName);
         }
+    }
+
+    public static void writeToFile(String text, File f) throws IOException {
+        FileWriter writer = new FileWriter(f);
+
+        writer.write(text);
+        writer.close();
     }
 }
