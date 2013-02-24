@@ -1,10 +1,14 @@
 package com.acrussell.learnalanguage;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.ProcessBuilder.Redirect;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
@@ -18,6 +22,7 @@ public class Runner extends SwingWorker<String, String> {
     private Console output, status;
     private JButton runButton, stopButton;
     private String mainClass, parameters[];
+    private StreamPiper piper;
 
     /**
      * Creates an object to handle running an executable Java process.
@@ -39,9 +44,15 @@ public class Runner extends SwingWorker<String, String> {
     public String doInBackground() {
         runButton.setEnabled(false);
         stopButton.setEnabled(true);
+
         // Create new process to execute user code
-        ProcessBuilder pb = new ProcessBuilder("java", mainClass); // TODO add
-                                                                   // parameters
+        List<String> processParams = new ArrayList<String>();
+        processParams.add("java");
+        processParams.add(mainClass);
+        processParams.addAll(Arrays.asList(parameters));
+        ProcessBuilder pb = new ProcessBuilder(
+                processParams.toArray(new String[0]));
+
         status.appendLine(String.format("Running %s.java...", mainClass));
 
         Process p;
@@ -57,8 +68,8 @@ public class Runner extends SwingWorker<String, String> {
         }
 
         // Send process output to console
-        StreamPiper output = new StreamPiper(p.getInputStream());
-        output.start();
+        piper = new StreamPiper(p.getInputStream(), output.getStream());
+        piper.start();
 
         // Thread that notifies GUI that the process has completed
         int statusCode = -1;
@@ -68,8 +79,10 @@ public class Runner extends SwingWorker<String, String> {
                     statusCode, statusCode == 0 ? "success" : "error");
             publish(statusMessage);
         } catch (InterruptedException e) {
-            publish("Machine interrupted.");
+            publish("Interrupting machine...");
             p.destroy();
+            piper.interrupt();
+            publish("Machine interrupted.");
         }
         return "Execution complete.";
     }
@@ -96,46 +109,38 @@ public class Runner extends SwingWorker<String, String> {
         stopButton.setEnabled(false);
     }
 
-    /**
-     * Class to handle piping an output stream of the created process into the
-     * input stream of the given status console and output console
-     * 
-     * @author Andy Russell
-     * 
-     */
     class StreamPiper extends Thread {
-        InputStream is;
+        private static final int BUFFER_SIZE = 2048;
 
-        StreamPiper(InputStream is) {
-            this.is = is;
+        private BufferedReader reader;
+        private BufferedWriter writer;
+
+        private boolean isInterrupted = false;
+        private char[] buffer = new char[BUFFER_SIZE];
+
+        public StreamPiper(InputStream is, OutputStream os) {
+            reader = new BufferedReader(new InputStreamReader(is));
+            writer = new BufferedWriter(new OutputStreamWriter(os));
         }
 
+        public void interrupt() {
+            isInterrupted = true;
+        }
+
+        @Override
         public void run() {
             try {
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-
-                while (true) {
-                    // Sleep to avoid hanging the GUI with too many updates
-                    // A little hack, there's probably a better solution
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        // Do nothing
-                    }
-
-                    int code = br.read();
-
-                    // End of stream
-                    if (code == -1) {
+                while (!isInterrupted) {
+                    int charsRead = reader.read(buffer);
+                    if (charsRead == -1) {
                         break;
                     }
-
-                    output.append(Character.toString((char) code));
+                    
+                    writer.append(new String(buffer, 0, charsRead));
                 }
-
-            } catch (IOException ioe) {
-                status.appendLine("Error: could not read process output.");
+                writer.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
