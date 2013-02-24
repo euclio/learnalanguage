@@ -30,12 +30,17 @@ public class Compiler extends SwingWorker<Void, String> {
 
     @Override
     protected Void doInBackground() {
+        if (source.isEmpty()) {
+            publish("No source to compile.");
+            return null;
+        }
+        
         for (File f : source) {
             publish(String.format("Compiling %s...", f.getName()));
 
             // Compiles the source into a .class file
             int statusCode = theCompiler.run(null, status.getStream(),
-                    status.getStream(), f.getName());
+                    status.getStream(), f.getAbsolutePath());
             if (statusCode == 0) {
                 publish("Compilation successful.");
             } else {
