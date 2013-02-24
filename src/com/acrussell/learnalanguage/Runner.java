@@ -18,7 +18,6 @@ import javax.swing.SwingWorker;
 
 public class Runner extends SwingWorker<String, String> {
     private Preferences prefs = Preferences.userNodeForPackage(this.getClass());
-    // private Process p;
     private Console output, status;
     private JButton runButton, stopButton;
     private File mainClass;
