@@ -18,6 +18,8 @@ import javax.swing.JScrollPane;
 import java.io.FileNotFoundException;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class LearningGUI extends JFrame {
@@ -47,8 +49,7 @@ public class LearningGUI extends JFrame {
 
     private String mainClass = "Test";
     private String[] args = new String[0];
-    private File[] openFiles = { new File("Test.java") }; // FIXME Assignment
-                                                          // for testing only
+    private List<File> openFiles = Files.getOpenFiles();
 
     public LearningGUI(String title) {
         super(title);
@@ -98,7 +99,9 @@ public class LearningGUI extends JFrame {
                 .createTitledBorder(EDITOR_BORDER_TEXT));
 
         editor.setContentType("text/java");
-        editor.setText(readFile(openFiles[0])); // FIXME hacky testing
+        if (Files.getLastOpenFile() != null) {
+            editor.setText(Files.readFile(Files.getLastOpenFile()));
+        }
 
         teachingContainer.add(editorScroll, BorderLayout.CENTER);
 
@@ -141,20 +144,5 @@ public class LearningGUI extends JFrame {
                 System.exit(0);
             }
         });
-    }
-
-    public String readFile(File f) {
-        StringBuilder result = new StringBuilder();
-        java.util.Scanner reader = null;
-        try {
-            reader = new java.util.Scanner(f);
-            while (reader.hasNextLine()) {
-                result.append(reader.nextLine() + "\n");
-            }
-        } catch (FileNotFoundException e) {
-            System.err.println("The file could not be loaded.");
-        }
-
-        return result.toString();
     }
 }

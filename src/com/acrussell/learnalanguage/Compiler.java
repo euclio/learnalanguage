@@ -12,7 +12,7 @@ public class Compiler extends SwingWorker<Void, String> {
     private Console status;
     private JavaCompiler theCompiler = ToolProvider.getSystemJavaCompiler();
     private JButton compileButton;
-    private File[] source;
+    private List<File> source;
 
     /**
      * Creates a new Compiler object
@@ -22,7 +22,7 @@ public class Compiler extends SwingWorker<Void, String> {
      * @param status
      *            The text component that should display the compiler's status
      */
-    public Compiler(File[] source, JButton compileButton, Console status) {
+    public Compiler(List<File> source, JButton compileButton, Console status) {
         this.source = source;
         this.status = status;
         this.compileButton = compileButton;
