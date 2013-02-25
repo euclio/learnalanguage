@@ -57,7 +57,7 @@ public class Runner extends SwingWorker<String, String> {
         // Extract the name of the class from the file
         String mainClassName = mainClass.getName().split("\\.")[0];
         processParams.add(mainClassName);
-        
+
         // Add the program's runtime parameters
         processParams.addAll(parameters);
 
@@ -121,6 +121,7 @@ public class Runner extends SwingWorker<String, String> {
 
     class StreamPiper extends Thread {
         private static final int BUFFER_SIZE = 2048;
+        private static final int FLUSH_DELAY = 1;
 
         private BufferedReader reader;
         private BufferedWriter writer;
@@ -140,14 +141,27 @@ public class Runner extends SwingWorker<String, String> {
         @Override
         public void run() {
             try {
+                long currentTime = System.currentTimeMillis();
                 while (!isInterrupted) {
                     int charsRead = reader.read(buffer);
+                    
+                    // Break if there is nothing to read
                     if (charsRead == -1) {
                         break;
                     }
 
+                    // Write the number of chars read to the output stream
                     writer.append(new String(buffer, 0, charsRead));
+
+                    // Flush stream if sufficient time has passed.
+                    // There may be a better solution to this!
+                    if (System.currentTimeMillis() - currentTime > FLUSH_DELAY) {
+                        writer.flush();
+                        currentTime = System.currentTimeMillis();
+                    }
                 }
+
+                // Flush output when process is interrupted
                 writer.flush();
             } catch (IOException e) {
                 e.printStackTrace();
