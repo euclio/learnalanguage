@@ -26,7 +26,7 @@ public class Runner extends SwingWorker<String, String> {
 
     /**
      * Creates an object to handle running an executable Java process.
-     * 
+     *
      * @param terminal
      * @param status
      */
@@ -144,7 +144,7 @@ public class Runner extends SwingWorker<String, String> {
                 long currentTime = System.currentTimeMillis();
                 while (!isInterrupted) {
                     int charsRead = reader.read(buffer);
-                    
+
                     // Break if there is nothing to read
                     if (charsRead == -1) {
                         break;

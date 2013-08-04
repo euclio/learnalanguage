@@ -62,7 +62,6 @@ public class LearningGUI extends JFrame {
                 for (File f : openFiles) {
                     editorPanel.confirmSave(f);
                 }
-                
                 new Compiler(openFiles, compileButton, status).execute();
             }
         });
@@ -76,7 +75,6 @@ public class LearningGUI extends JFrame {
                     status.appendLine("Could not run. There is no selected file.");
                     return;
                 }
-
                 runner = new Runner(editorPanel.getOpenFile(), args, runButton,
                         stopButton, terminal, status);
                 runner.execute();

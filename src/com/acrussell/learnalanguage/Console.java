@@ -37,9 +37,9 @@ public class Console extends JTextArea {
     };
 
     /**
-     * Constructs a new Console with the given rows and columns, and initializes
-     * with the given text.
-     * 
+     * Constructs a new Console with the given rows and columns, and
+     * initializes with the given text.
+     *
      * @param text
      *            The text displayed initially on the Console
      * @param rows
@@ -59,7 +59,7 @@ public class Console extends JTextArea {
 
     /**
      * Constructs a new Console with the given rows and columns
-     * 
+     *
      * @param rows
      *            The number of rows in the Console
      * @param cols
@@ -71,7 +71,7 @@ public class Console extends JTextArea {
 
     /**
      * Appends the given text to the component with a trailing newline.
-     * 
+     *
      * @param text
      *            The text to be added to the component
      * @see #append(String)
@@ -84,7 +84,7 @@ public class Console extends JTextArea {
      * Appends the given parameter to the component. Works similarly to
      * JTextArea's append, but it limits the amount of lines that can be written
      * to the component.
-     * 
+     *
      * @param text
      *            The text to be added to the component
      */

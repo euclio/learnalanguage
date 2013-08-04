@@ -60,24 +60,24 @@ public class EditorPanel extends JPanel {
             tabs.remove(index);
         }
     }
-    
+
     private void writeFile(File file) {
         int index = openFiles.indexOf(file);
         JScrollPane jsp = (JScrollPane) tabs.getComponentAt(index);
         JEditorPane editor = (JEditorPane) jsp.getViewport().getView();
-        
+
         try {
             Files.writeToFile(editor.getText(), file);
         } catch (IOException e) {
             e.printStackTrace();
-        }       
+        }
     }
-    
+
     public boolean confirmSave(File file) {
         writeFile(file);
         return true; // TODO Make this ask the user first
     }
-    
+
     public void cleanUpFiles() {
         List<File> filesToReopen = new ArrayList<File>();
         for (File f : openFiles) {
@@ -86,7 +86,7 @@ public class EditorPanel extends JPanel {
                 filesToReopen.add(f);
             }
         }
-        
+
         StringBuilder builder = new StringBuilder();
         for (File f : filesToReopen) {
             builder.append(f.getAbsolutePath());

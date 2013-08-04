@@ -16,7 +16,7 @@ public class Compiler extends SwingWorker<Void, String> {
 
     /**
      * Creates a new Compiler object
-     * 
+     *
      * @param source
      *            The source code to be compiled
      * @param status
@@ -34,7 +34,7 @@ public class Compiler extends SwingWorker<Void, String> {
             publish("No source to compile.");
             return null;
         }
-        
+
         for (File f : source) {
             publish(String.format("Compiling %s...", f.getName()));
 
