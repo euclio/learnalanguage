@@ -1,3 +1,5 @@
+*.swp
+
 # Ignore binaries
 *.class
 bin/*
@@ -5,3 +7,4 @@ bin/*
 # Ignore eclipse things
 .settings
 .project
+/bin
