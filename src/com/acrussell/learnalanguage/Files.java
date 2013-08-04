@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
+import java.util.Scanner;
 
 public class Files {
     private static Preferences prefs = Preferences
@@ -15,9 +16,7 @@ public class Files {
 
     public static String readFile(File f) {
         StringBuilder result = new StringBuilder();
-        java.util.Scanner reader = null;
-        try {
-            reader = new java.util.Scanner(f);
+        try (Scanner reader = new Scanner(f)) {
             while (reader.hasNextLine()) {
                 result.append(reader.nextLine() + "\n");
             }
